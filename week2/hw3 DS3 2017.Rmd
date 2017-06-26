@@ -1,0 +1,116 @@
+---
+title: "hw3 DS3 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(boot)
+```
+
+```{r more orange juice}
+
+oj <- read.csv(file='oj.csv', head=TRUE, sep=',')
+
+#basic regression model
+reg1 <- glm(logmove ~ log(price)*brand*feat, data = oj) 
+summary(reg1)
+
+#add in store demographics as a linear feature
+reg2 <- lm(logmove ~ log(price)*brand*feat + HVAL150 + AGE60 + EDUC + ETHNIC + INCOME + HHLARGE + WORKWOM + SSTRDIST + SSTRVOL + CPDIST5 + CPWVOL5, data = oj)
+summary(reg2)
+
+#how much did the adjusted R-squared improve with adding store demographics?
+  #before store demographics adjusted r-squared:  0.5352
+  #after store demographics adjusted r-squared:   0.5848
+
+#use 5-fold cross validation to compare MSE of the model with and without demographics
+set.seed(17)
+cv.error.5=rep(0,5)
+for(i in 1:5){
+  glm.fit=glm(logmove ~ log(price)*brand*feat, data = oj)
+  cv.error.5[i] = cv.glm(oj, glm.fit, K=5)$delta[1]
+}
+mean(cv.error.5)
+
+set.seed(17)
+cv.error.5=rep(0,5)
+for(i in 1:5){
+  glm.fit=glm(logmove ~ log(price)*brand*feat + HVAL150 + AGE60 + EDUC + ETHNIC + INCOME + HHLARGE + WORKWOM + SSTRDIST + SSTRVOL + CPDIST5 + CPWVOL5, data = oj)
+  cv.error.5[i] = cv.glm(oj,glm.fit, K=5)$delta[1]
+}
+mean(cv.error.5)
+
+#summary of HVAL150 and INCOME
+summary(oj$HVAL150)
+  #Median: 0.346154
+  #3rd Qu. 0.528313
+summary(oj$INCOME)
+
+#how much does log(quantity) change each week on average moving from 50th to 75th HVAL150
+diff <- summary(oj$HVAL150)["3rd Qu."]-summary(oj$HVAL150)["Median"]
+diff2 <- coef(reg2)["HVAL150"]* diff
+exp(diff2)
+
+#how much does log(quantity) change each week on average moving from 50th to 75th INCOME
+diff <- summary(oj$INCOME)["3rd Qu."]-summary(oj$INCOME)["Median"]
+diff2 <- coef(reg2)["INCOME"]* diff
+exp(diff2)
+
+
+#varaiables impact price sensitivity
+reg3 <- glm(logmove ~ log(price)*brand*feat + log(price)*HVAL150 + log(price)*INCOME + AGE60 + EDUC + ETHNIC + HHLARGE + WORKWOM + SSTRDIST + SSTRVOL + CPDIST5 + CPWVOL5, data = oj)
+summary(reg3)
+
+diff <- summary(oj$HVAL150)["3rd Qu."]-summary(oj$HVAL150)["Median"]
+diff2 <- coef(reg3)["log(price):HVAL150"]* diff
+exp(diff2)
+
+#how much does log(quantity) change each week on average moving from 50th to 75th INCOME
+diff <- summary(oj$INCOME)["3rd Qu."]-summary(oj$INCOME)["Median"]
+diff2 <- coef(reg3)["log(price):INCOME"]* diff
+exp(diff2)
+
+#tuna fish
+df1 <-oj
+df1$week<-df1$week+1
+# df1 now has NEXT week and not the current one. If we merge this by
+#weeks now, this is last week's price (e.g., "lagged price").
+myvars <- c("price", "week", "brand","store")
+df1 <- df1[myvars]
+oj_with_lagged_prices <- merge(oj, df1, by=c("brand","store","week"))
+
+#First why to add in lagged weeks
+df1 <-oj
+df1$week<-df1$week+1  
+# df1 now has NEXT week and not the current one.  If we merge this by weeks now, this is last week's price (e.g., "lagged price").
+myvars <- c("price", "week", "brand","store")
+df1 <- df1[myvars]
+lagged <- merge(oj, df1, by=c("brand","store","week"))
+lagged=lagged[order(lagged$week,lagged$store),]
+lagged=lagged[order(lagged$store,lagged$week),]
+colnames(lagged)[18] <- "lagged_price"
+colnames(lagged)[6] <- "price"
+
+reglag = glm(logmove ~ log(price)*brand*feat + log(lagged_price)*brand, data=lagged)
+summary(reglag)
+
+set.seed(17)
+cv.error.10=rep(0,10)
+for(i in 1:10){
+  glm.fit=glm(logmove ~ 
+                log(price)*brand +
+                log(price)*feat +
+                log(price)*HVAL150 + 
+                log(price)*INCOME+ 
+                log(price)*AGE60+ 
+                log(price)*EDUC+ 
+                log(price)*ETHNIC, 
+              data = oj)
+  cv.error.10[i] = cv.glm(oj,glm.fit, K=10)$delta[1]
+}
+mean(cv.error.10)
+
+```

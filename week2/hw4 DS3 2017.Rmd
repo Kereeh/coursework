@@ -1,0 +1,88 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(boot)
+library(glmnet)
+library(caTools)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r sat}
+sat <- read.csv(file='sat.csv', head=TRUE, sep=',')
+summary(sat)
+colnames(sat)
+
+sat_logit <- glm(satobs ~ rank + 
+                   mlhs + mcol + 
+                   flhs + fcol + 
+                   black + hisp + 
+                   asian + rdsc + 
+                   vocab + matsc + 
+                   nsib, 
+                 data = sat)
+
+summary(sat_logit)
+confint(sat_logit)
+exp(coef(sat_logit))
+exp(confint(sat_logit))
+predict(sat_logit, type="response")
+residuals(sat_logit, type="deviance")
+
+oj <- read.csv(file='oj.csv', head=TRUE, sep=',')
+summary(oj)
+
+df1 <- oj
+df1$week<-df1$week+1
+
+myvars <- c("price", "week", "brand", "store")
+df1 <- df1[myvars]
+
+lagged <- merge(oj, df1, by = c("brand", "store", "week"))
+
+head(lagged)
+
+oj <- lagged
+lagged <- NULL
+names(oj)[names(oj) == 'price.x'] <- 'price'
+names(oj)[names(oj) == 'price.y'] <- 'price_lag'
+
+head(oj)
+
+y <- as.matrix(oj[,c("logmove")])
+x <- model.matrix(logmove ~ 
+                log(price)*brand*feat +
+                log(price)*log(price) +
+                log(price)*feat*EDUC +
+                log(price)*HVAL150*EDUC + 
+                log(price)*INCOME*EDUC + 
+                log(price)*AGE60*EDUC+ 
+                log(price)*EDUC*EDUC+ 
+                log(price)*ETHNIC*EDUC, 
+              data = oj)
+
+lasso_reg = cv.glmnet(x, y, alpha = 1)
+plot(lasso_reg)
+
+## 75% of the sample size
+smp_size <- floor(0.75 * nrow(x))
+
+## set the seed to make your partition reproductible
+set.seed(123)
+train_ind <- sample(seq_len(nrow(x)), size = smp_size)
+
+train <- x[train_ind, ]
+test <- x[-train_ind, ]
+
+predict(train, test, s="lambda.min")
+
+```

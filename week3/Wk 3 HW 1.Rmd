@@ -1,0 +1,100 @@
+---
+title: "ML Modeling"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(glmnet)
+library(hydroGOF)
+library(ggplot2)
+library(rpart)
+library(rpart.plot)
+```
+
+Simulate LASSO & Ridge with Training Data
+y_train <- (b_true)(X_train) + (e_train)
+
+Altering beta:
+  b_alt= matrix(0,nrow=K, ncol=1)
+  for(i in 1:5){
+    b_alt[i] = 5
+  }
+```{r lasso&ridge training}
+
+for(i in 1:100){
+  N=100
+  K=100
+  
+  #sparse model
+  b_true = matrix(rnorm(1*K,mean=0, sd=1),K,1)
+  
+  #nonsparse model
+  #b_true = matrix(0, nrow = 100, ncol = 1)
+  #for(i in 1:4){
+  #  b_true[i] = 5
+  #}
+  
+  #train data
+  x_train = matrix(rnorm(N*K, mean=0, sd=1),N,K)
+  e_train = matrix(rnorm(1*N,mean=0,sd=1),N,1)
+  y_train = x_train %*% b_true + e_train
+  
+  #test data
+  x_test = matrix(rnorm(N*K, mean=0, sd=1),N,K)
+  e_test = matrix(rnorm(1*N,mean=0,sd=1),N,1)
+  y_test = x_test %*% b_true + e_test
+  
+  #train models
+  ridge_train <- cv.glmnet(x_train,y_train,alpha=0,lambda = 10^seq(-5,-1,.1))
+  lasso_train <- cv.glmnet(x_train,y_train,alpha=1,lambda = 10^seq(-5,-1,.1))
+  ols_train <- glm(y_train~x_train)
+  
+  #predict
+  predict_ridge_train <- predict(ridge_train, x_train)
+  predict_lasso_train <- predict(lasso_train, x_train)
+  predict_ols_train <- predict(ols_train, data.frame(x_train))
+  
+  predict_ridge_test <- predict(ridge_train, x_test)
+  predict_lasso_test <- predict(lasso_train, x_test)
+  predict_ols_test <- predict(ols_train, data.frame(x_test))
+  
+  #mean squared error
+  mse_ridge_train[i] <- mse(predict_ridge_train, y_train)
+  mse_lasso_train[i] <- mse(predict_lasso_train, y_train)
+  mse_ols_train[i] <- mean((predict_ols_train - y_train)^2)
+  
+  mse_ridge_test[i] <- mse(predict_ridge_test, y_test)
+  mse_lasso_test[i] <- mse(predict_lasso_test, y_test)
+  mse_ols_test[i] <- mean((predict_ols_test - y_test)^2)
+}
+
+training_err <- c(mean(mse_ridge_train),mean(mse_lasso_train),mean(mse_ols_train))
+test_err <- c(mean(mse_ridge_test), mean(mse_lasso_test), mean(mse_ols_test))
+
+training_err
+test_err
+
+#Sparse Model, Lasso has the least mean squared error
+#Non-Sparse Model, Ridge has the least mean squared error
+```
+
+Simulate Trees
+
+```{r trees}
+N = 100
+K = 1
+
+data = matrix(nrow = N, ncol = K)
+error = matrix(rnorm(1*N,mean=0,sd=1),100,1)
+
+y = data + error
+
+tree1 = rpart(y~data + error)
+
+tree2 = rpart(y~data^2 + error)
+
+tree3 = rpart(y~2*)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
