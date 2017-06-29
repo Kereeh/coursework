@@ -5,5 +5,8 @@
 *.tsv
 *~
 *.zip
+<<<<<<< HEAD
 *.dat
+=======
+>>>>>>> 05b4f4c04b63d9a212933ec47e347e3aedf96f28
 .ipynb_checkpoints

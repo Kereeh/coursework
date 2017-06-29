@@ -1,7 +1,11 @@
 ---
 title: "Coefficients and bias"
 author: "Jacob LaRiviere"
+<<<<<<< HEAD
 date: "June 18, 2017"
+=======
+date: "June 18, 2017, 2017"
+>>>>>>> 05b4f4c04b63d9a212933ec47e347e3aedf96f28
 output: html_document
 ---
   
@@ -25,6 +29,12 @@ library(ggplot2)
 library(reshape2)
 
 
+<<<<<<< HEAD
+=======
+#setwd("C:/Users/jlariv/OneDrive/Econ 404/")
+#mydata <- read.csv("oj.csv")
+#colnames(mydata)[1-17]
+>>>>>>> 05b4f4c04b63d9a212933ec47e347e3aedf96f28
 X <- NULL
 # Create a variable n which is the number of observations we'll look at.  
 n = 1000
@@ -40,8 +50,12 @@ head(X)
 # Histogram of the first column.  We can see that it looks like a bell curve
 hist(X[,1])
 
+<<<<<<< HEAD
 #NOTE: if you wanted to draw from something with a non-zero mean and 
 #more interesting variance that's: rnorm(n*p)*st_dev + mu
+=======
+#NOTE: if you wanted to draw from something with a non-zero mean and more interesting variance that's: rnorm(n*p)*st_dev + mu
+>>>>>>> 05b4f4c04b63d9a212933ec47e347e3aedf96f28
 st_dev <- 2
 mu <- 50
 
@@ -50,6 +64,7 @@ X <-data.frame(X)
 ggplot(X,aes(X[,1])) + geom_histogram(binwidth=1)
 # Base R version: hist(X[,1])
 
+<<<<<<< HEAD
 # So Jacob made this data up.  We know that the mean is 50.  
 # There is a really nice function in R called "sample" which 
 # lets us take a random sub sample of our data say I'd like to 
@@ -58,6 +73,11 @@ ggplot(X,aes(X[,1])) + geom_histogram(binwidth=1)
 obs = 25
 total_samps = 100
 
+=======
+# So Jacob made this data up.  We know that the mean is 50.  There is a really nice function in R called "sample" which lets us take a random sub sample of our data say I'd like to take a sample of 25 observations 
+obs = 25
+total_samps = 100
+>>>>>>> 05b4f4c04b63d9a212933ec47e347e3aedf96f28
 #sample_means = matrix(0, total_samps, 1)
 sample_means = rep(0,total_samps)
 
@@ -77,6 +97,7 @@ summary(sample_means)
 obs_0 = 3
 obs_max = 100
 obs_vec <- seq(obs_0, obs_max, 1)
+<<<<<<< HEAD
 obs_count <- length(obs_vec) 
 
 #Create dataframe to store our observations
@@ -85,6 +106,15 @@ sim_power[,1]<-obs_vec
 sim_power <- data.frame(sim_power)
 colnames(sim_power) <- c("Number_Obs","mean","st_error")
 
+=======
+obs_count <- length(obs_vec)
+
+#Create dataframe to store our observations
+sim_power = matrix(0, obs_count, 3)
+sim_power[,1]<-obs_vec
+sim_power <- data.frame(sim_power)
+colnames(sim_power) <- c("Number_Obs","mean","st_error")
+>>>>>>> 05b4f4c04b63d9a212933ec47e347e3aedf96f28
 #Reset sample_means
 sample_means <- NULL
 sample_means = rep(0,total_samps)
@@ -98,11 +128,16 @@ for (j in 1:obs_count) {
   sim_power[j,3] <- st_dev/(sim_power[j,1]^.5)
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 05b4f4c04b63d9a212933ec47e347e3aedf96f28
 ggplot(sim_power, aes(Number_Obs)) + geom_line(aes(y=mean),colour = "blue") 
 ggplot(sim_power, aes(Number_Obs)) + geom_line(aes(y=st_error),colour = "red")
 
 
 # Question: Take a normal distribution with mu = 10 and variance of 9 (e.g., standard deviation of 3).  Simulate a population of 10,000.  What is the sample size needed to make the standard error of the sample mean sufficiently small so that no more than 5% of the sample means are less 9?
+<<<<<<< HEAD
 
 #Setting up the simulated population
 X <- NULL
@@ -149,3 +184,12 @@ ggplot(sim_power, aes(Number_Obs)) + geom_line(aes(y=st_error),colour = "red")
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+=======
+  
+  
+
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+>>>>>>> 05b4f4c04b63d9a212933ec47e347e3aedf96f28
