@@ -1,0 +1,73 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Build a tool for "power calcultaions". 
+
+
+```{r power calculations}
+
+#alpha is the significance level: chance of false positive when no effects exist
+#power is the significance level: chance of true positive when real effects exist
+power_calc <- function(N, d, M = 100, a = 0.05){
+  ps=c()
+  #for(m in 1:M){
+    df = data.frame(N= 1:N)
+      
+    df$d = d
+    df$W = sample(rep(0:1, each = N/2))
+    df$e = rnorm(N)
+      
+    df$y = df$d * df$W + df$e
+      
+    reg = glm(df$y ~ df$W)
+    df$val= summary(reg)$coefficients["df$W",4]
+    print(df$val)
+    ps = c(ps, df$val)
+  #}
+  
+  power = mean(ps<a)
+  return(power)
+}
+
+power_calc(1000,0.5,100,0.05)
+
+
+get_min_N <- function(d, power = 0.80){
+  N=4
+  while(power_calc(N,d) < power){
+    N = N + 2
+  }
+  return(N)
+}
+get_min_N(0.5)
+
+get_min_d <- function(N, power = 0.80){
+  power_se <- function(d){
+    new_power = power_calc(N,d)
+    return((new_power-power)^2)
+  }
+  ret = optim(0.5, power_se, method="BFGS")
+  return(ret$par)
+}
+
+get_min_d(100)
+
+
+
+
+library(pwr)
+power1 = pwr.t.test(n=10, d=0.5, sig.level = 0.05)
+#power = 1
+power2 = pwr.t.test(n=500, d=0.5, sig.level = 0.01)
+#power = 1
+power3 = pwr.t.test(d=0.5, sig.level = 0.05, power = 0.8)
+#N = 64
+power4 = pwr.t.test(n=100, power = 0.8, sig.level = 0.05)
+power4#d = 0.1253527
+```
