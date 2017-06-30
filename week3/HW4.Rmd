@@ -1,0 +1,76 @@
+---
+title: "Homework 4"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(varhandle)
+```
+
+## R Markdown
+
+DID with Card and Krueger (1993)
+
+New Jersey is the treatment group
+Pennsylvania is the control group
+
+SHEET - store identifier
+STATE - state
+
+EMPFT - number of full time employees affected by minimum wage
+EMPPT - number of part time employees affected by minimum wage
+NMGRS - number of manages affected by minimum wage
+WAGE_ST - starting wage may or may not decrease
+INCTIME - time for increase may or may not take a longer time
+FIRSTINC - increase in wage may or may not decrease
+BONUS - bonus may or may not decrease
+HRSOPEN - hours open may or may not decrease 
+
+```{r DiD}
+
+restaurant <- read_csv('Card & Krueger (1994) - dataset.csv')
+
+restaurant <- restaurant %>%
+  select(SHEET, STATE, CHAIN, PCTAFF, EMPFT, EMPFT2, EMPPT, EMPPT2,  
+         NMGRS, NMGRS2, WAGE_ST, WAGE_ST2, INCTIME, INCTIME2,
+         FIRSTINC, FIRSTIN2, HRSOPEN, HRSOPEN2)
+
+rest_diff <- restaurant %>%
+  mutate(DEMPPT = EMPPT2 - EMPPT, DEMPFT = EMPFT2 - EMPFT,
+         DMGRS = NMGRS2 - NMGRS, DWAGE = WAGE_ST2 - WAGE_ST,
+         DINC = INCTIME2 - INCTIME, DHRS = HRSOPEN2 - HRSOPEN,
+         DFINC = FIRSTIN2 - FIRSTINC) %>%
+  select(SHEET, STATE, CHAIN, DEMPPT, DEMPFT, DMGRS, DWAGE, DINC,
+            DHRS, DFINC) %>%
+  mutate(STATE = as.factor(STATE))
+
+
+reg = lm(DEMPFT ~ STATE,data = rest_diff)
+summary(reg)
+plot(DWAGE~ STATE, data=rest_diff)
+abline(reg)
+
+reg = glm(DEMPFT ~ STATE + STATE*DEMPPT + STATE*DWAGE +
+            STATE*DMGRS + STATE*DINC + STATE*DHRS + STATE*DFINC,
+            data = rest_diff)
+
+summary(reg)
+ggplot(rest_diff, aes(x = CHAIN, y = DWAGE, fill=STATE)) +
+  geom_bar(stat="identity", position = "dodge") +
+  scale_fill_discrete(name="", breaks=c(0,1), labels=c("Pennsylvania","New Jersey"))
+
+ggplot(rest_diff, aes(x = SHEET, y = DEMPFT, color=STATE)) +
+  geom_point(stat="identity", position = "dodge") +
+  stat_smooth(method="lm")
+
+
+summary(reg)
+
+#Y0 before the program start
+#Y1 after the program start
+#Gi = 1 Pennsylvania State = 0
+#Gi = 0 New Jersey State = 1
+
+```
