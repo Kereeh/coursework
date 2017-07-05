@@ -1,0 +1,81 @@
+---
+title: 'Naive Bayes: Toy Example'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(e1071)
+```
+Lab 5: Naive Bayes: Toy example
+
+Learning objectives:
+calculate conditional probabilities by hand
+estimate naive Bayes model using naiveBayes()
+calculate conditional probabilities using naive Bayes model and predict()
+
+```{r bayes}
+train1 <- data.frame(class=c("spam","ham","ham","ham"),
+                    viagra=c("yes","no","no","yes"))
+train1
+
+classifier1 <- naiveBayes(class ~ viagra, train1)
+classifier1
+
+test1 <- data.frame(viagra=c("yes"))
+test1$viagra <- factor(test1$viagra, levels=c("no","yes"))
+test1
+
+prediction1 <- predict(classifier1, test1, type="raw")
+prediction1
+
+train2 <- data.frame(type=c("spam","ham","ham","ham"),
+                    viagra=c("yes","no","no","yes"),
+                    meet=c("yes","yes","yes","no"))
+train2
+
+classifier2 <- naiveBayes(type ~ viagra + meet, train2)
+classifier2
+
+test2 <- data.frame(viagra=c("yes"), meet=c("yes"))
+test2$viagra <- factor(test2$viagra, levels=c("no","yes"))
+test2$meet <- factor(test2$meet, levels=c("no","yes"))
+test2
+
+prediction2 <- predict(classifier2, test2, type="raw")
+prediction2
+
+#Exercises
+train3 <- data.frame(buy=c("yes","no","no","yes"),
+                   income=c("high","high","medium","low"))
+train3
+
+classifier3 <- naiveBayes(buy ~ income, train3)
+classifier3
+
+test3 <- data.frame(income=c("high"))
+test3$income <- factor(test3$income, levels=c("low","medium","high"))
+test3
+
+prediction3 <- predict(classifier3, test3, type="raw")
+prediction3
+
+train4 <- data.frame(buy=c("yes","no","no","yes"),
+                   income=c("high","high","medium","low"),
+                   gender=c("male","female","female","male"))
+train4
+
+classifier4 <- naiveBayes(buy ~ income + gender, train4)
+classifier4
+
+test4 <- data.frame(income=c("high"), gender=c("male"))
+test4$income <- factor(test4$income, levels=c("low","medium","high"))
+test4$gender <- factor(test4$gender, levels=c("male","female"))
+test4
+
+prediction4 <- predict(classifier4, test4, type = "raw")
+prediction4
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
