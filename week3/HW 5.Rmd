@@ -1,0 +1,59 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(rdd)
+
+incumbency <- read_csv('Lee(2007)_RDReplication.csv')
+
+incumbency <- incumbency %>%
+  select(DWinNxt, DemWin, DifDPct, ForgnPct, GovWkPct, BlackPct, UrbanPct,
+         DWinPrv, YearElec, CDNumAtL)
+
+```
+
+Regression Discontinuity on Incumbency Effect (Lee, 2007)
+--
+
+DifDPct - significant
+Congressional District Number - significant
+Foreign Percentage - significant
+Black Percentage - significant
+Urban Percentage - significant
+Previous Democrat Win - significant
+
+Government Worker Percentage - not significant
+Year Elected - not significant
+--
+Bad Control Variables would be Media Coverage
+
+```{r RD}
+
+reg1 <- glm(DWinNxt ~ DemWin, data=incumbency)
+#DemWin = 0.721859
+
+reg2 <- glm(DWinNxt ~ DemWin + DifDPct + CDNumAtL + ForgnPct +
+            BlackPct + UrbanPct + DWinPrv, data=incumbency)
+summary(reg2)
+#DemWin = 0.6309649
+
+reg3 <- glm(DWinNxt ~ DemWin + GovWkPct + YearElec, data=incumbency)
+#DemWin = 0.8011271
+
+sub_inc <- incumbency %>% filter(abs(DifDPct-0)<15)
+
+reg4 <- glm(DWinNxt ~ DifDPct, data=sub_inc)
+summary(reg4)
+
+reg4 <- RDestimate(DWinNxt ~ DifDPct, data=sub_inc)
+plot(reg4)
+
+summary(incumbency)
+```
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
