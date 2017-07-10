@@ -1,5 +1,5 @@
 ---
-title: 'Naive Bayes: Toy Example'
+title: 'Lab 5: Naive Bayes: Toy Example'
 output: html_document
 ---
 
@@ -7,8 +7,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(e1071)
 ```
-Lab 5: Naive Bayes: Toy example
-
 Learning objectives:
 calculate conditional probabilities by hand
 estimate naive Bayes model using naiveBayes()
@@ -69,8 +67,8 @@ classifier4 <- naiveBayes(buy ~ income + gender, train4)
 classifier4
 
 test4 <- data.frame(income=c("high"), gender=c("male"))
-test4$income <- factor(test4$income, levels=c("low","medium","high"))
-test4$gender <- factor(test4$gender, levels=c("male","female"))
+test4$income <- factor(test4$income, levels=c("high","medium","low"))
+test4$gender <- factor(test4$gender, levels=c("female","male"))
 test4
 
 prediction4 <- predict(classifier4, test4, type = "raw")
